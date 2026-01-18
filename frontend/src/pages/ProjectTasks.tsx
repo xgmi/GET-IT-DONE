@@ -19,6 +19,7 @@ import { useSearch } from '@/contexts/SearchContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { useTaskAttempts } from '@/hooks/useTaskAttempts';
 import { useTaskAttemptWithSession } from '@/hooks/useTaskAttempt';
+import { useTaskMutations } from '@/hooks/useTaskMutations';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useBranchStatus, useAttemptExecution } from '@/hooks';
 import { paths } from '@/lib/paths';
@@ -56,6 +57,7 @@ import { useHotkeysContext } from 'react-hotkeys-hook';
 import { TasksLayout, type LayoutMode } from '@/components/layout/TasksLayout';
 import { PreviewPanel } from '@/components/panels/PreviewPanel';
 import { DiffsPanel } from '@/components/panels/DiffsPanel';
+import { SpikePanel } from '@/components/panels/SpikePanel';
 import TaskAttemptPanel from '@/components/panels/TaskAttemptPanel';
 import TaskPanel from '@/components/panels/TaskPanel';
 import SharedTaskPanel from '@/components/panels/SharedTaskPanel';
@@ -276,6 +278,8 @@ export function ProjectTasks() {
     }
   );
 
+  const { updateTask } = useTaskMutations(projectId);
+
   const latestAttemptId = useMemo(() => {
     if (!attempts?.length) return undefined;
     return [...attempts].sort((a, b) => {
@@ -334,7 +338,7 @@ export function ProjectTasks() {
 
   const rawMode = searchParams.get('view') as LayoutMode;
   const mode: LayoutMode =
-    rawMode === 'preview' || rawMode === 'diffs' ? rawMode : null;
+    rawMode === 'preview' || rawMode === 'diffs' || rawMode === 'spike' ? rawMode : null;
 
   // TODO: Remove this redirect after v0.1.0 (legacy URL support for bookmarked links)
   // Migrates old `view=logs` to `view=diffs`
@@ -601,7 +605,7 @@ export function ProjectTasks() {
     () => {
       if (isPanelOpen) {
         // Track keyboard shortcut before cycling view
-        const order: LayoutMode[] = [null, 'preview', 'diffs'];
+        const order: LayoutMode[] = [null, 'preview', 'diffs', 'spike'];
         const idx = order.indexOf(mode);
         const next = order[(idx + 1) % order.length];
 
@@ -614,6 +618,13 @@ export function ProjectTasks() {
           });
         } else if (next === 'diffs') {
           posthog?.capture('diffs_navigated', {
+            trigger: 'keyboard',
+            direction: 'forward',
+            timestamp: new Date().toISOString(),
+            source: 'frontend',
+          });
+        } else if (next === 'spike') {
+          posthog?.capture('spike_navigated', {
             trigger: 'keyboard',
             direction: 'forward',
             timestamp: new Date().toISOString(),
@@ -634,7 +645,7 @@ export function ProjectTasks() {
     () => {
       if (isPanelOpen) {
         // Track keyboard shortcut before cycling view
-        const order: LayoutMode[] = [null, 'preview', 'diffs'];
+        const order: LayoutMode[] = [null, 'preview', 'diffs', 'spike'];
         const idx = order.indexOf(mode);
         const next = order[(idx - 1 + order.length) % order.length];
 
@@ -647,6 +658,13 @@ export function ProjectTasks() {
           });
         } else if (next === 'diffs') {
           posthog?.capture('diffs_navigated', {
+            trigger: 'keyboard',
+            direction: 'backward',
+            timestamp: new Date().toISOString(),
+            source: 'frontend',
+          });
+        } else if (next === 'spike') {
+          posthog?.capture('spike_navigated', {
             trigger: 'keyboard',
             direction: 'backward',
             timestamp: new Date().toISOString(),
@@ -1053,6 +1071,23 @@ export function ProjectTasks() {
             selectedTask={selectedTask}
             branchStatus={branchStatus ?? null}
             branchStatusError={branchStatusError}
+          />
+        )}
+        {mode === 'spike' && (
+          <SpikePanel
+            task={selectedTask}
+            onTaskUpdate={async (description: string) => {
+              await updateTask.mutateAsync({
+                taskId: selectedTask.id,
+                data: {
+                  title: null,
+                  description,
+                  status: null,
+                  parent_workspace_id: null,
+                  image_ids: null,
+                },
+              });
+            }}
           />
         )}
       </div>

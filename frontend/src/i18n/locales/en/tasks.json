@@ -466,6 +466,7 @@
   "attemptHeaderActions": {
     "preview": "Preview",
     "diffs": "Diffs",
+    "spike": "Spike",
     "relatedTasks": "Related tasks",
     "tryNewUI": "try the new UI"
   },
