@@ -104,7 +104,7 @@ The following environment variables can be configured at build time or runtime:
 
 ### Remote Deployment
 
-When running Vibe Kanban on a remote server (e.g., via systemctl, Docker, or cloud hosting), you can configure your editor to open projects via SSH:
+When running on a remote server (e.g., via systemctl, Docker, or cloud hosting), you can configure your editor to open projects via SSH:
 
 1. **Access via tunnel**: Use Cloudflare Tunnel, ngrok, or similar to expose the web UI
 2. **Configure remote SSH** in Settings → Editor Integration:

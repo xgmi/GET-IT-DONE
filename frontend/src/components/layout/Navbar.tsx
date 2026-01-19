@@ -40,26 +40,33 @@ import {
 import { OAuthDialog } from '@/components/dialogs/global/OAuthDialog';
 import { useUserSystem } from '@/components/ConfigProvider';
 import { oauthApi } from '@/lib/api';
+import { brandingConfig } from '@/config/branding.config';
 
 const INTERNAL_NAV = [{ label: 'Projects', icon: FolderOpen, to: '/projects' }];
 
 const EXTERNAL_LINKS = [
   {
+    key: 'docs',
     label: 'Docs',
     icon: BookOpen,
-    href: 'https://vibekanban.com/docs',
+    href: brandingConfig.links.docs?.url || 'https://vibekanban.com/docs',
+    visible: brandingConfig.links.docs?.visible ?? true,
   },
   {
+    key: 'support',
     label: 'Support',
     icon: MessageCircleQuestion,
-    href: 'https://github.com/BloopAI/vibe-kanban/issues',
+    href: brandingConfig.links.support?.url || 'https://github.com/BloopAI/vibe-kanban/issues',
+    visible: brandingConfig.links.support?.visible ?? true,
   },
   {
+    key: 'discord',
     label: 'Discord',
     icon: MessageCircle,
-    href: 'https://discord.gg/AC4nwVtJM3',
+    href: brandingConfig.links.discord?.url || 'https://discord.gg/AC4nwVtJM3',
+    visible: brandingConfig.links.discord?.visible ?? true,
   },
-];
+].filter(link => link.visible);
 
 function NavDivider() {
   return (
@@ -145,32 +152,34 @@ export function Navbar() {
             <Link to="/projects">
               <Logo />
             </Link>
-            <a
-              href="https://discord.gg/AC4nwVtJM3"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Join our Discord"
-              className="hidden sm:inline-flex items-center ml-3 text-xs font-medium overflow-hidden border h-6"
-            >
-              <span className="bg-muted text-foreground flex items-center p-2 border-r">
-                <svg
-                  className="h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d={siDiscord.path} />
-                </svg>
-              </span>
-              <span
-                className=" h-full items-center flex p-2"
-                aria-live="polite"
+            {brandingConfig.links.discord?.visible && (
+              <a
+                href={brandingConfig.links.discord.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Join our Discord"
+                className="hidden sm:inline-flex items-center ml-3 text-xs font-medium overflow-hidden border h-6"
               >
-                {onlineCount != null
-                  ? `${onlineCount.toLocaleString()} online`
-                  : 'online'}
-              </span>
-            </a>
+                <span className="bg-muted text-foreground flex items-center p-2 border-r">
+                  <svg
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d={siDiscord.path} />
+                  </svg>
+                </span>
+                <span
+                  className=" h-full items-center flex p-2"
+                  aria-live="polite"
+                >
+                  {onlineCount != null
+                    ? `${onlineCount.toLocaleString()} online`
+                    : 'online'}
+                </span>
+              </a>
+            )}
           </div>
 
           <div className="hidden sm:flex items-center gap-2">
